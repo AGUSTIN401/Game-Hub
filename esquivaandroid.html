@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Esquiva Enemigos</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    canvas {
+      background: #222;
+      border: 2px solid white;
+      margin-top: 20px;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: center;
+    }
+
+    button {
+      font-size: 32px;
+      padding: 15px 25px;
+      margin: 5px;
+      background: #333;
+      color: white;
+      border: 2px solid white;
+      border-radius: 10px;
+      transition: 0.2s;
+    }
+
+    button:active {
+      background: #555;
+      transform: scale(0.95);
+    }
+
+    #gameOver {
+      font-size: 28px;
+      color: red;
+      margin-top: 10px;
+      display: none;
+      text-align: center;
+    }
+
+    #timer {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+
+    #restartBtn {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="300" height="400"></canvas>
+  <div id="timer">⏱️ Tiempo: 0s</div>
+  <div id="gameOver">💀 ¡Game Over!</div>
+  <button id="restartBtn" onclick="restartGame()">🔁 Reiniciar</button>
+
+  <div class="controls">
+    <div class="row">
+      <button onclick="move('up')">⬆️</button>
+    </div>
+    <div class="row">
+      <button onclick="move('left')">⬅️</button>
+      <button onclick="move('down')">⬇️</button>
+      <button onclick="move('right')">➡️</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const gameOverText = document.getElementById("gameOver");
+    const restartBtn = document.getElementById("restartBtn");
+    const timerDisplay = document.getElementById("timer");
+
+    let player, enemies, gameRunning, spawnTimer;
+    let timeAlive = 0;
+    let timerInterval;
+
+    function initGame() {
+      player = { x: 140, y: 350, size: 20, color: "lime" };
+      enemies = [];
+      gameRunning = true;
+      spawnTimer = 0;
+      timeAlive = 0;
+      gameOverText.style.display = "none";
+      restartBtn.style.display = "none";
+      timerDisplay.textContent = "⏱️ Tiempo: 0s";
+
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (gameRunning) {
+          timeAlive++;
+          timerDisplay.textContent = `⏱️ Tiempo: ${timeAlive}s`;
+        }
+      }, 1000);
+
+      update();
+    }
+
+    function drawRect(x, y, size, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, size, size);
+    }
+
+    function spawnEnemy() {
+      const size = 20;
+      const x = Math.floor(Math.random() * (canvas.width - size));
+      enemies.push({ x: x, y: -size, size: size, speed: 2 + Math.random() * 2 });
+    }
+
+    function update() {
+      if (!gameRunning) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawRect(player.x, player.y, player.size, player.color);
+
+      enemies.forEach((e, index) => {
+        e.y += e.speed;
+        drawRect(e.x, e.y, e.size, "red");
+
+        if (
+          e.x < player.x + player.size &&
+          e.x + e.size > player.x &&
+          e.y < player.y + player.size &&
+          e.y + e.size > player.y
+        ) {
+          gameOver();
+        }
+
+        if (e.y > canvas.height) enemies.splice(index, 1);
+      });
+
+      spawnTimer++;
+      if (spawnTimer > 60) {
+        spawnEnemy();
+        spawnTimer = 0;
+      }
+
+      if (gameRunning) requestAnimationFrame(update);
+    }
+
+    function move(dir) {
+      if (!gameRunning) return;
+      const speed = 10;
+      if (dir === "up") player.y -= speed;
+      if (dir === "down") player.y += speed;
+      if (dir === "left") player.x -= speed;
+      if (dir === "right") player.x += speed;
+
+      player.x = Math.max(0, Math.min(player.x, canvas.width - player.size));
+      player.y = Math.max(0, Math.min(player.y, canvas.height - player.size));
+    }
+
+    function gameOver() {
+      gameRunning = false;
+      gameOverText.style.display = "block";
+      restartBtn.style.display = "inline-block";
+      clearInterval(timerInterval);
+    }
+
+    function restartGame() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      initGame();
+    }
+
+    initGame();
+  </script>
+</body>
+</html>
