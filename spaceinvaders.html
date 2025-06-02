@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Space Invaders</title>
+<style>
+  body {
+    margin: 0;
+    background: #222;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  canvas {
+    background: #000;
+    display: block;
+    margin-top: 20px;
+  }
+  #hud {
+    display: flex;
+    justify-content: space-between;
+    width: 600px;
+    margin-top: 10px;
+    font-size: 18px;
+  }
+  #gameOverScreen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+    font-size: 24px;
+  }
+</style>
+</head>
+<body>
+<div id="hud">
+  <div>Vidas: <span id="lives">3</span></div>
+  <div>Ronda: <span id="round">1</span></div>
+  <div>Tiempo: <span id="time">0</span>s</div>
+</div>
+<canvas id="game"></canvas>
+<div id="gameOverScreen">
+  <p>¡Game Over!</p>
+  <p>Presiona R para reiniciar</p>
+</div>
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const livesDisplay = document.getElementById('lives');
+const roundDisplay = document.getElementById('round');
+const timeDisplay = document.getElementById('time');
+const gameOverScreen = document.getElementById('gameOverScreen');
+
+canvas.width = 600;
+canvas.height = 400;
+
+let lives = 3;
+let round = 1;
+let time = 0;
+let timerInterval;
+
+const player = {
+  x: canvas.width/2 - 20,
+  y: canvas.height - 50,
+  width: 40,
+  height: 20,
+  speed: 6,
+  movingLeft: false,
+  movingRight: false,
+  bullets: []
+};
+
+let enemies = [];
+const enemyRows = 4;
+const enemyCols = 7;
+const enemyWidth = 30;
+const enemyHeight = 20;
+const enemyPadding = 15;
+
+let enemyDirection = 1;
+let enemySpeed = 1;
+let enemyDrop = 10;
+let enemyBullets = [];
+let gameOver = false;
+
+function spawnEnemies() {
+  enemies = [];
+  for(let r=0; r<enemyRows; r++){
+    for(let c=0; c<enemyCols; c++){
+      enemies.push({
+        x: 50 + c*(enemyWidth + enemyPadding),
+        y: 50 + r*(enemyHeight + enemyPadding),
+        width: enemyWidth,
+        height: enemyHeight,
+        alive: true,
+        shootCooldown: Math.floor(Math.random()*200) + 100
+      });
+    }
+  }
+}
+
+function drawPlayer(){
+  ctx.fillStyle = 'cyan';
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+}
+
+function drawEnemies(){
+  ctx.fillStyle = 'orange';
+  enemies.forEach(enemy => {
+    if(enemy.alive){
+      ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+    }
+  });
+}
+
+function drawBullets(){
+  ctx.fillStyle = 'yellow';
+  player.bullets.forEach(bullet => {
+    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+  });
+  ctx.fillStyle = 'red';
+  enemyBullets.forEach(bullet => {
+    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+  });
+}
+
+function update(){
+  if(gameOver) return;
+
+  if(player.movingLeft && player.x > 0) player.x -= player.speed;
+  if(player.movingRight && player.x + player.width < canvas.width) player.x += player.speed;
+
+  player.bullets.forEach((bullet, i) => {
+    bullet.y -= bullet.speed;
+    if(bullet.y + bullet.height < 0) player.bullets.splice(i,1);
+    enemies.forEach(enemy => {
+      if(enemy.alive && bullet.x < enemy.x + enemy.width && bullet.x + bullet.width > enemy.x && bullet.y < enemy.y + enemy.height && bullet.y + bullet.height > enemy.y){
+        enemy.alive = false;
+        player.bullets.splice(i,1);
+      }
+    });
+  });
+
+  if(enemies.every(e => !e.alive)) {
+    round++;
+    roundDisplay.textContent = round;
+    enemySpeed += 0.5;
+    spawnEnemies();
+  }
+
+  enemyBullets.forEach((bullet, i) => {
+    bullet.y += bullet.speed;
+    if(bullet.y > canvas.height) enemyBullets.splice(i,1);
+    if(bullet.x < player.x + player.width && bullet.x + bullet.width > player.x && bullet.y < player.y + player.height && bullet.y + bullet.height > player.y){
+      enemyBullets.splice(i,1);
+      lives--;
+      livesDisplay.textContent = lives;
+      if(lives <= 0){
+        gameOver = true;
+        clearInterval(timerInterval);
+        gameOverScreen.style.display = 'block';
+      }
+    }
+  });
+
+  enemies.forEach(enemy => {
+    if(enemy.alive){
+      enemy.shootCooldown--;
+      if(enemy.shootCooldown <= 0){
+        enemyBullets.push({
+          x: enemy.x + enemy.width/2 - 2,
+          y: enemy.y + enemy.height,
+          width: 4,
+          height: 10,
+          speed: 4
+        });
+        enemy.shootCooldown = Math.floor(Math.random()*300) + 100;
+      }
+    }
+  });
+
+  let shouldDrop = false;
+  enemies.forEach(enemy => {
+    enemy.x += enemyDirection * enemySpeed;
+    if(enemy.x + enemy.width > canvas.width || enemy.x < 0){
+      shouldDrop = true;
+    }
+  });
+  if(shouldDrop){
+    enemyDirection *= -1;
+    enemies.forEach(enemy => enemy.y += enemyDrop);
+  }
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawPlayer();
+  drawEnemies();
+  drawBullets();
+}
+
+window.addEventListener('keydown', e => {
+  if(e.code === 'ArrowLeft') player.movingLeft = true;
+  if(e.code === 'ArrowRight') player.movingRight = true;
+  if(e.code === 'Space' && !gameOver){
+    player.bullets.push({
+      x: player.x + player.width/2 - 2,
+      y: player.y,
+      width: 4,
+      height: 10,
+      speed: 7
+    });
+  }
+  if(e.code === 'KeyR' && gameOver){
+    location.reload();
+  }
+});
+
+window.addEventListener('keyup', e => {
+  if(e.code === 'ArrowLeft') player.movingLeft = false;
+  if(e.code === 'ArrowRight') player.movingRight = false;
+});
+
+function loop(){
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function startTimer(){
+  timerInterval = setInterval(() => {
+    time++;
+    timeDisplay.textContent = time;
+  }, 1000);
+}
+
+spawnEnemies();
+startTimer();
+loop();
+</script>
+</body>
+</html>

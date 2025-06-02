@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hub de Juegos</title>
+  <style>
+    /* Reset básico */
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #202020;
+      padding: 10px 20px;
+      border-bottom: 2px solid #444;
+      flex-shrink: 0;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .username {
+      font-weight: bold;
+    }
+
+    .user-info img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid white;
+    }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: #222;
+      padding-top: 20px;
+      border-right: 2px solid #444;
+      box-sizing: border-box;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar li {
+      padding: 15px 20px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #ccc;
+      user-select: none;
+      border-left: 4px solid transparent;
+      transition: background 0.3s, border-color 0.3s, color 0.3s;
+    }
+
+    .sidebar li:hover {
+      background: #333;
+      color: white;
+    }
+
+    .sidebar li.active {
+      background: #444;
+      color: white;
+      border-left: 4px solid #0af;
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 30px;
+      box-sizing: border-box;
+    }
+
+    .subsection-container {
+      display: flex;
+      gap: 40px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .subsection {
+      flex: 1 1 300px;
+      min-width: 280px;
+    }
+
+    .subsection-title {
+      font-size: 22px;
+      margin-bottom: 15px;
+      font-weight: 600;
+      color: #bbb;
+      border-bottom: 1px solid #444;
+      padding-bottom: 5px;
+    }
+
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: 20px;
+    }
+
+    .juego {
+      background: #222;
+      padding: 20px;
+      border: 2px solid white;
+      border-radius: 12px;
+      width: 160px;
+      text-align: center;
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+      transition: transform 0.3s, background 0.3s;
+    }
+
+    .juego:hover {
+      background: #333;
+      transform: scale(1.05);
+    }
+
+    .section-title {
+      font-size: 28px;
+      margin-bottom: 30px;
+      font-weight: 700;
+      color: #eee;
+      text-shadow: 1px 1px 3px #000;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="logo">🕹️ GameHub</div>
+    <div class="user-info">
+      <span class="username">AGUSTIN401</span>
+      <img src="Avatar.png" alt="Avatar" />
+    </div>
+  </div>
+
+  <div class="main-container">
+    <nav class="sidebar">
+      <ul>
+        <li class="active" data-section="single">Juegos de Un Jugador</li>
+        <li data-section="multi">Juegos Multijugador</li>
+        <li data-section="soon">Próximamente</li>
+        <li data-section="mods">Juegos Modeados</li>
+        <li data-section="changelog">Cambios y Juegos Nuevos</li>
+      </ul>
+    </nav>
+
+    <main class="content">
+      <section id="single" class="section" style="display:block">
+        <h2 class="section-title">Juegos de Un Jugador</h2>
+        <div class="subsection-container">
+          <div class="subsection">
+            <h3 class="subsection-title">Juegos para PC</h3>
+            <div class="grid">
+              <a href="buscaminas.html" class="juego">Buscaminas</a>
+              <a href="spaceinvaders.html" class="juego">Space Invaders</a>
+              <a href="pingpong.html" class="juego">Ping Pong</a>
+              <a href="damas.html" class="juego">Damas</a>
+              <a href="tateti.html" class="juego">Ta-Te-Ti</a>
+            </div>
+          </div>
+          <div class="subsection">
+            <h3 class="subsection-title">Juegos para Android</h3>
+            <div class="grid">
+              <a href="damas.html" class="juego">Damas</a>
+              <a href="tateti.html" class="juego">Ta-Te-Ti</a>
+              <a href="esquiva.html" class="juego">Esquiva</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="multi" class="section" style="display:none">
+        <h2 class="section-title">Juegos Multijugador</h2>
+        <div class="subsection-container">
+          <div class="subsection">
+            <h3 class="subsection-title">Juegos para PC</h3>
+            <div class="grid">
+              <a href="." class="juego">Próximamente</a>
+              <a href="." class="juego">Próximamente</a>
+            </div>
+          </div>
+          <div class="subsection">
+            <h3 class="subsection-title">Juegos para Android</h3>
+            <div class="grid">
+              <a href="." class="juego">Próximamente</a>
+              <a href="." class="juego">Próximamente</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="soon" class="section" style="display:none">
+        <h2 class="section-title">Próximamente</h2>
+        <div class="subsection-container">
+          <div class="subsection">
+            <h3 class="subsection-title">Juegos para PC</h3>
+            <div class="grid">
+              <a href="." class="juego">Próximamente</a>
+              <a href="." class="juego">Próximamente</a>
+            </div>
+          </div>
+          <div class="subsection">
+            <h3 class="subsection-title">Juegos para Android</h3>
+            <div class="grid">
+              <a href="." class="juego">Próximamente</a>
+              <a href="." class="juego">Próximamente</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="mods" class="section" style="display:none">
+        <h2 class="section-title">Juegos Modeados</h2>
+        <div class="subsection-container">
+          <div class="subsection">
+            <h3 class="subsection-title">Juegos para PC</h3>
+            <div class="grid">
+              <a href="." class="juego">Próximamente</a>
+              <a href="." class="juego">Próximamente</a>
+            </div>
+          </div>
+          <div class="subsection">
+            <h3 class="subsection-title">Juegos para Android</h3>
+            <div class="grid">
+              <a href="." class="juego">Próximamente</a>
+              <a href="." class="juego">Próximamente</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <section id="changelog" class="section" style="display:none">
+        <h2 class="section-title">Cambios y Juegos Nuevos</h2>
+        <p>Aquí aparecerán las últimas novedades y juegos agregados.</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const menuItems = document.querySelectorAll('.sidebar li');
+    const sections = document.querySelectorAll('main .section');
+
+    menuItems.forEach(item => {
+      item.addEventListener('click', () => {
+        menuItems.forEach(i => i.classList.remove('active'));
+        sections.forEach(s => s.style.display = 'none');
+
+        item.classList.add('active');
+
+        const sectionId = item.getAttribute('data-section');
+        const sectionToShow = document.getElementById(sectionId);
+        if (sectionToShow) {
+          sectionToShow.style.display = 'block';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

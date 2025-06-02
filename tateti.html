@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>3 en Raya - 2 Jugadores</title>
+<style>
+  body {
+    background: #222;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    user-select: none;
+  }
+  canvas {
+    background: #111;
+    border: 3px solid white;
+    cursor: pointer;
+  }
+  #info {
+    margin-top: 20px;
+    font-size: 24px;
+  }
+  button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 8px;
+    border: none;
+    background: #555;
+    color: white;
+    transition: background 0.3s;
+  }
+  button:hover {
+    background: #777;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="game" width="360" height="360"></canvas>
+<div id="info">Turno: Jugador 1 (X)</div>
+<button id="restartBtn">Reiniciar juego</button>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const info = document.getElementById('info');
+const restartBtn = document.getElementById('restartBtn');
+
+const size = 120;  // tamaño de cada celda
+let board = [
+  ['', '', ''],
+  ['', '', ''],
+  ['', '', '']
+];
+
+let currentPlayer = 'X'; // jugador 1 es X, jugador 2 es O
+let gameOver = false;
+
+function drawBoard() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // líneas del tablero
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = 3;
+
+  // líneas verticales
+  ctx.beginPath();
+  ctx.moveTo(size, 0);
+  ctx.lineTo(size, canvas.height);
+  ctx.moveTo(size * 2, 0);
+  ctx.lineTo(size * 2, canvas.height);
+  ctx.stroke();
+
+  // líneas horizontales
+  ctx.beginPath();
+  ctx.moveTo(0, size);
+  ctx.lineTo(canvas.width, size);
+  ctx.moveTo(0, size * 2);
+  ctx.lineTo(canvas.width, size * 2);
+  ctx.stroke();
+
+  // dibujar X y O
+  for (let row = 0; row < 3; row++) {
+    for(let col = 0; col < 3; col++) {
+      const x = col * size + size/2;
+      const y = row * size + size/2;
+
+      if(board[row][col] === 'X') {
+        drawX(x, y);
+      } else if(board[row][col] === 'O') {
+        drawO(x, y);
+      }
+    }
+  }
+}
+
+function drawX(x, y) {
+  const offset = 30;
+  ctx.strokeStyle = '#00ffff';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(x - offset, y - offset);
+  ctx.lineTo(x + offset, y + offset);
+  ctx.moveTo(x + offset, y - offset);
+  ctx.lineTo(x - offset, y + offset);
+  ctx.stroke();
+}
+
+function drawO(x, y) {
+  ctx.strokeStyle = '#ff6f61';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(x, y, 35, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+function checkWin(player) {
+  // filas, columnas y diagonales
+  for(let i = 0; i < 3; i++) {
+    // filas
+    if(board[i][0] === player && board[i][1] === player && board[i][2] === player) return true;
+    // columnas
+    if(board[0][i] === player && board[1][i] === player && board[2][i] === player) return true;
+  }
+  // diagonales
+  if(board[0][0] === player && board[1][1] === player && board[2][2] === player) return true;
+  if(board[0][2] === player && board[1][1] === player && board[2][0] === player) return true;
+
+  return false;
+}
+
+function checkDraw() {
+  for(let row = 0; row < 3; row++) {
+    for(let col = 0; col < 3; col++) {
+      if(board[row][col] === '') return false;
+    }
+  }
+  return true;
+}
+
+canvas.addEventListener('click', e => {
+  if(gameOver) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+
+  const col = Math.floor(mouseX / size);
+  const row = Math.floor(mouseY / size);
+
+  if(board[row][col] === '') {
+    board[row][col] = currentPlayer;
+
+    if(checkWin(currentPlayer)) {
+      info.textContent = `¡Ganó Jugador ${currentPlayer === 'X' ? '1 (X)' : '2 (O)'}!`;
+      gameOver = true;
+    } else if(checkDraw()) {
+      info.textContent = '¡Empate!';
+      gameOver = true;
+    } else {
+      currentPlayer = (currentPlayer === 'X') ? 'O' : 'X';
+      info.textContent = `Turno: Jugador ${currentPlayer === 'X' ? '1 (X)' : '2 (O)'}`;
+    }
+    drawBoard();
+  }
+});
+
+restartBtn.addEventListener('click', () => {
+  board = [
+    ['', '', ''],
+    ['', '', ''],
+    ['', '', '']
+  ];
+  currentPlayer = 'X';
+  gameOver = false;
+  info.textContent = 'Turno: Jugador 1 (X)';
+  drawBoard();
+});
+
+// Inicial
+drawBoard();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Pong 2 Jugadores</title>
+<style>
+  body {
+    margin: 0;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    user-select: none;
+  }
+  canvas {
+    background: #111;
+    border: 2px solid white;
+  }
+  #scoreboard {
+    font-size: 24px;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  #resetBtn {
+    padding: 8px 16px;
+    font-size: 16px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: none;
+    background-color: #444;
+    color: white;
+    transition: background-color 0.3s;
+  }
+  #resetBtn:hover {
+    background-color: #666;
+  }
+</style>
+</head>
+<body>
+
+<button id="resetBtn">Reiniciar juego</button>
+<div id="scoreboard">Jugador 1: 0 &nbsp;&nbsp;|&nbsp;&nbsp; Jugador 2: 0</div>
+<canvas id="game" width="700" height="400"></canvas>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+const paddleWidth = 10;
+const paddleHeight = 80;
+const ballSize = 12;
+
+const player1 = {
+  x: 10,
+  y: canvas.height/2 - paddleHeight/2,
+  width: paddleWidth,
+  height: paddleHeight,
+  score: 0,
+  dy: 0,
+  speed: 6,
+};
+
+const player2 = {
+  x: canvas.width - paddleWidth - 10,
+  y: canvas.height/2 - paddleHeight/2,
+  width: paddleWidth,
+  height: paddleHeight,
+  score: 0,
+  dy: 0,
+  speed: 6,
+};
+
+const ball = {
+  x: canvas.width / 2,
+  y: canvas.height / 2,
+  size: ballSize,
+  speed: 5,
+  dx: 5,
+  dy: 3,
+};
+
+function drawRect(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, w, h);
+}
+
+function drawCircle(x, y, r, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function resetBall() {
+  ball.x = canvas.width / 2;
+  ball.y = canvas.height / 2;
+  ball.dx = (Math.random() > 0.5 ? 1 : -1) * ball.speed;
+  ball.dy = (Math.random() * 4 - 2);
+}
+
+function resetGame() {
+  player1.score = 0;
+  player2.score = 0;
+  player1.y = canvas.height/2 - paddleHeight/2;
+  player2.y = canvas.height/2 - paddleHeight/2;
+  player1.dy = 0;
+  player2.dy = 0;
+  resetBall();
+  updateScore();
+}
+
+function update() {
+  // Mover jugador 1
+  player1.y += player1.dy;
+  if(player1.y < 0) player1.y = 0;
+  if(player1.y + player1.height > canvas.height) player1.y = canvas.height - player1.height;
+
+  // Mover jugador 2
+  player2.y += player2.dy;
+  if(player2.y < 0) player2.y = 0;
+  if(player2.y + player2.height > canvas.height) player2.y = canvas.height - player2.height;
+
+  // Mover pelota
+  ball.x += ball.dx;
+  ball.y += ball.dy;
+
+  // Rebote superior e inferior
+  if(ball.y + ball.size/2 > canvas.height || ball.y - ball.size/2 < 0) {
+    ball.dy *= -1;
+  }
+
+  // Rebote en paletas jugador 1
+  if(ball.x - ball.size/2 < player1.x + player1.width && 
+     ball.y > player1.y && 
+     ball.y < player1.y + player1.height) {
+    ball.dx *= -1;
+    let collidePoint = ball.y - (player1.y + player1.height/2);
+    collidePoint = collidePoint / (player1.height/2);
+    ball.dy = collidePoint * 5;
+  }
+
+  // Rebote en paletas jugador 2
+  if(ball.x + ball.size/2 > player2.x && 
+     ball.y > player2.y && 
+     ball.y < player2.y + player2.height) {
+    ball.dx *= -1;
+    let collidePoint = ball.y - (player2.y + player2.height/2);
+    collidePoint = collidePoint / (player2.height/2);
+    ball.dy = collidePoint * 5;
+  }
+
+  // Punto para jugador 2
+  if(ball.x - ball.size/2 < 0) {
+    player2.score++;
+    updateScore();
+    resetBall();
+  }
+
+  // Punto para jugador 1
+  if(ball.x + ball.size/2 > canvas.width) {
+    player1.score++;
+    updateScore();
+    resetBall();
+  }
+}
+
+function updateScore() {
+  document.getElementById('scoreboard').textContent = `Jugador 1: ${player1.score}  |  Jugador 2: ${player2.score}`;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawRect(player1.x, player1.y, player1.width, player1.height, 'cyan');
+  drawRect(player2.x, player2.y, player2.width, player2.height, 'orange');
+  drawCircle(ball.x, ball.y, ball.size/2, 'white');
+
+  // Línea central punteada
+  ctx.strokeStyle = 'white';
+  ctx.setLineDash([10, 10]);
+  ctx.beginPath();
+  ctx.moveTo(canvas.width/2, 0);
+  ctx.lineTo(canvas.width/2, canvas.height);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+// Controles de jugadores
+window.addEventListener('keydown', e => {
+  if(e.key === 'w' || e.key === 'W') {
+    player1.dy = -player1.speed;
+  }
+  if(e.key === 's' || e.key === 'S') {
+    player1.dy = player1.speed;
+  }
+  if(e.key === 'ArrowUp') {
+    player2.dy = -player2.speed;
+  }
+  if(e.key === 'ArrowDown') {
+    player2.dy = player2.speed;
+  }
+});
+
+window.addEventListener('keyup', e => {
+  if(e.key === 'w' || e.key === 'W' || e.key === 's' || e.key === 'S') {
+    player1.dy = 0;
+  }
+  if(e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    player2.dy = 0;
+  }
+});
+
+// Botón para reiniciar juego
+document.getElementById('resetBtn').addEventListener('click', () => {
+  resetGame();
+});
+
+// Inicio
+resetBall();
+updateScore();
+gameLoop();
+</script>
+
+</body>
+</html>
