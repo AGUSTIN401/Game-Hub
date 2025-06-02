@@ -1,2 +1,2 @@
-Game Hub Center
-hi
+# Game Hub Center (web)
+Official website.
